@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Indian Railways</title>
+    <link rel="stylesheet" href="qr.css">
+</head>
+<body>
+    <header>
+        <img class="logo" src="output_qr/Indian_Railway_Logo.webp">
+        <h1>Indian Railways Procurement Portal</h1>
+        <p>Procure Railway Line Materials</p>
+    </header>
+    <div class="container">
+        <h2>Submit Procurement Request</h2>
+        <form id="procurementForm">
+            <label for="materialName">Material Name:</label>
+            <input type="text" id="materialName" required />
+
+            <label for="quantity">Quantity:</label>
+            <input type="number" id="quantity" required />
+
+            <label for="description">Description:</label>
+            <textarea id="description"></textarea>
+
+            <label for="supplier">Supplier:</label>
+            <input type="text" id="supplier" />
+
+            <button type="submit">Submit & Generate AI Report</button>
+        </form>
+        
+        <div id="result" style="display:none;">
+            <h3>Procurement Details</h3>
+            <p><strong>Fitting ID:</strong> <span id="fittingId"></span></p>
+            <p><strong>Material:</strong> <span id="matName"></span></p>
+            <p><strong>Quantity:</strong> <span id="qty"></span></p>
+            <p><strong>Description:</strong> <span id="desc"></span></p>
+            <p><strong>Supplier:</strong> <span id="supp"></span></p>
+            <img id="qrImage" src="" alt="QR Code" />
+        </div>
+    </div>
+
+    <script>
+        document.getElementById("procurementForm").addEventListener("submit", async function (e) {
+            e.preventDefault();
+            const materialName = document.getElementById("materialName").value;
+            const quantity = document.getElementById("quantity").value;
+            const description = document.getElementById("description").value;
+            const supplier = document.getElementById("supplier").value;
+
+            const response = await fetch("/generate_qr", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
+                body: new URLSearchParams({
+                    material_name: materialName,
+                    quantity: quantity,
+                    description: description,
+                    supplier: supplier,
+                }),
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                document.getElementById("fittingId").textContent = data.fitting_id;
+                document.getElementById("matName").textContent = data.material_name;
+                document.getElementById("qty").textContent = data.quantity;
+                document.getElementById("desc").textContent = data.description;
+                document.getElementById("supp").textContent = data.supplier;
+                document.getElementById("qrImage").src = data.qr_url;
+                document.getElementById("result").style.display = "block";
+            } else {
+                alert("Error generating QR code");
+            }
+        });
+    </script>
+</body>
+</html>
